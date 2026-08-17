@@ -1,11 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { defineConfig } from 'drizzle-kit';
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+const dataDir = path.resolve('data');
+if (!fs.existsSync(dataDir)) {
+	fs.mkdirSync(dataDir, { recursive: true });
+}
 
 export default defineConfig({
-	schema: './src/lib/server/db/schema.ts',
 	dialect: 'sqlite',
-	dbCredentials: { url: process.env.DATABASE_URL },
-	verbose: true,
-	strict: true
+	schema: './src/lib/server/schema.ts',
+	out: './drizzle',
+	dbCredentials: {
+		url: 'file:data/sqlite.db'
+	}
 });
