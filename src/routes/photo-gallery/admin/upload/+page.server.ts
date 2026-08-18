@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import sharp from 'sharp';
 import { db } from '$lib/server/db';
 import { albumsTable, photosTable } from '$lib/server/schema';
@@ -17,7 +17,11 @@ function getAlbumFolderName(albumTitle: string): string {
 	return sanitized || 'album';
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.isAdmin) {
+		redirect(303, '/admin/login?redirectTo=/photo-gallery/admin/upload');
+	}
+
 	const allAlbums = await db.select().from(albumsTable).orderBy(desc(albumsTable.createdAt));
 
 	return {
@@ -26,12 +30,17 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
+		if (!locals.isAdmin) {
+			return fail(403, { error: 'Unauthorized. Admin privileges required.' });
+		}
+
 		const formData = await request.formData();
 		const mode = formData.get('mode'); // 'new' | 'existing'
 		const existingAlbumId = formData.get('existingAlbumId');
 		const title = formData.get('title');
 		const tag = formData.get('tag');
+		const eventDateStr = formData.get('eventDate');
 		const photos = formData.getAll('photos');
 
 		const validPhotos = photos.filter((p): p is File => p instanceof File && p.size > 0);
@@ -69,11 +78,23 @@ export const actions = {
 					return fail(400, { error: 'Album name is required.' });
 				}
 
+				let parsedEventDate: Date | null = null;
+				if (typeof eventDateStr === 'string' && eventDateStr.trim()) {
+					const parsed = new Date(eventDateStr.trim());
+					if (!Number.isNaN(parsed.getTime())) {
+						parsedEventDate = parsed;
+					}
+				}
+				if (!parsedEventDate) {
+					parsedEventDate = new Date();
+				}
+
 				const [insertedAlbum] = await db
 					.insert(albumsTable)
 					.values({
 						title: albumTitle,
-						tag: albumTag
+						tag: albumTag,
+						eventDate: parsedEventDate
 					})
 					.returning();
 

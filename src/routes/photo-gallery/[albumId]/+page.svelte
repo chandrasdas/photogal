@@ -21,6 +21,30 @@
 	let selectedPhotos = $state<SelectedPhoto[]>([]);
 	let fileInputRef = $state<HTMLInputElement | null>(null);
 
+	// State for delete confirmations
+	let photoToDelete = $state<{ id: number; index: number; url: string } | null>(null);
+	let isDeletingPhoto = $state(false);
+	let showDeleteAlbumModal = $state(false);
+	let isDeletingAlbum = $state(false);
+
+	function openDeletePhotoModal(photo: { id: number; url: string }, index: number, e: Event) {
+		e.preventDefault();
+		e.stopPropagation();
+		photoToDelete = { ...photo, index };
+	}
+
+	function closeDeletePhotoModal() {
+		photoToDelete = null;
+	}
+
+	function openDeleteAlbumModal() {
+		showDeleteAlbumModal = true;
+	}
+
+	function closeDeleteAlbumModal() {
+		showDeleteAlbumModal = false;
+	}
+
 	function openAddPhotos() {
 		showAddPhotos = true;
 		setTimeout(() => {
@@ -136,10 +160,20 @@
 		};
 	});
 
-	let formattedDate = $derived.by(() => {
-		if (!data.album.createdAt) return 'Unknown date';
-		return new Date(data.album.createdAt).toLocaleDateString('en-US', {
+	let formattedEventDate = $derived.by(() => {
+		const d = data.album.eventDate || data.album.createdAt;
+		if (!d) return 'Unknown date';
+		return new Date(d).toLocaleDateString('en-US', {
 			month: 'long',
+			day: 'numeric',
+			year: 'numeric'
+		});
+	});
+
+	let formattedCreatedDate = $derived.by(() => {
+		if (!data.album.createdAt) return null;
+		return new Date(data.album.createdAt).toLocaleDateString('en-US', {
+			month: 'short',
 			day: 'numeric',
 			year: 'numeric'
 		});
@@ -217,22 +251,107 @@
 					<span>All Albums</span>
 				</a>
 
-				<button
-					type="button"
-					onclick={toggleOrOpenAddPhotos}
-					class="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-amber-500/25 transition hover:from-amber-600 hover:to-orange-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
-				>
-					<svg
-						class="h-4 w-4"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="2"
-						stroke="currentColor"
+				{#if data.isAdmin}
+					<!-- Admin Badge -->
+					<div
+						class="hidden items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-xs font-bold text-amber-800 sm:inline-flex"
 					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-					</svg>
-					<span>{showAddPhotos ? 'Close Upload' : 'Add Photos'}</span>
-				</button>
+						<span class="relative flex h-2 w-2">
+							<span
+								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"
+							></span>
+							<span class="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+						</span>
+						<span>Admin Mode</span>
+					</div>
+
+					<!-- Delete Album Button -->
+					<button
+						type="button"
+						onclick={openDeleteAlbumModal}
+						class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 shadow-2xs transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800"
+						title="Delete this entire album"
+					>
+						<svg
+							class="h-3.5 w-3.5 text-rose-600"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+							/>
+						</svg>
+						<span class="hidden sm:inline">Delete Album</span>
+					</button>
+
+					<!-- Add Photos Toggle -->
+					<button
+						type="button"
+						onclick={toggleOrOpenAddPhotos}
+						class="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-amber-500/25 transition hover:from-amber-600 hover:to-orange-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
+					>
+						<svg
+							class="h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="2"
+							stroke="currentColor"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+						</svg>
+						<span>{showAddPhotos ? 'Close Upload' : 'Add Photos'}</span>
+					</button>
+
+					<!-- Logout Action -->
+					<form method="POST" action="/admin/logout" class="inline">
+						<button
+							type="submit"
+							class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50"
+							title="Sign out of admin mode"
+						>
+							<svg
+								class="h-3.5 w-3.5 text-slate-500"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+								/>
+							</svg>
+							<span class="hidden sm:inline">Logout</span>
+						</button>
+					</form>
+				{:else}
+					<!-- Public Guest Admin Login -->
+					<a
+						href={resolve('/admin/login')}
+						class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-amber-300 hover:bg-amber-50/50 hover:text-amber-800"
+						title="Sign in as Administrator to upload or delete photos"
+					>
+						<svg
+							class="h-3.5 w-3.5 text-amber-600"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+							/>
+						</svg>
+						<span>Admin Login</span>
+					</a>
+				{/if}
 			</div>
 		</div>
 	</header>
@@ -247,8 +366,8 @@
 
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="max-w-3xl">
-				<!-- Tag Pill -->
-				<div class="flex items-center gap-2.5">
+				<!-- Tag & Date Pill -->
+				<div class="flex flex-wrap items-center gap-2.5">
 					<span
 						class="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/90 px-3 py-1 text-xs font-bold text-amber-800 shadow-xs"
 					>
@@ -256,9 +375,28 @@
 						{data.album.tag}
 					</span>
 
-					<span class="text-xs font-semibold text-slate-500">
-						Created {formattedDate}
-					</span>
+					<div class="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+						<svg
+							class="h-3.5 w-3.5 text-amber-500"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="2"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+							/>
+						</svg>
+						<span>Event Date: <strong>{formattedEventDate}</strong></span>
+					</div>
+
+					{#if formattedCreatedDate}
+						<span class="text-xs text-slate-400">
+							(Uploaded {formattedCreatedDate})
+						</span>
+					{/if}
 				</div>
 
 				<h1
@@ -282,22 +420,45 @@
 						<span>Original Aspect Ratio Display</span>
 					</div>
 
-					<button
-						type="button"
-						onclick={openAddPhotos}
-						class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/80 px-3.5 py-1.5 font-bold text-amber-800 shadow-xs transition hover:bg-amber-100"
-					>
-						<svg
-							class="h-3.5 w-3.5 text-amber-600"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="2"
+					{#if data.isAdmin}
+						<button
+							type="button"
+							onclick={openAddPhotos}
+							class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/80 px-3.5 py-1.5 font-bold text-amber-800 shadow-xs transition hover:bg-amber-100"
 						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-						</svg>
-						<span>+ Add More Photos</span>
-					</button>
+							<svg
+								class="h-3.5 w-3.5 text-amber-600"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2"
+							>
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+							</svg>
+							<span>+ Add More Photos</span>
+						</button>
+
+						<button
+							type="button"
+							onclick={openDeleteAlbumModal}
+							class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-3.5 py-1.5 font-bold text-rose-700 shadow-xs transition hover:bg-rose-100"
+						>
+							<svg
+								class="h-3.5 w-3.5 text-rose-600"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+								/>
+							</svg>
+							<span>Delete Album</span>
+						</button>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -320,13 +481,13 @@
 					</svg>
 				</div>
 				<div>
-					<h4 class="font-semibold text-rose-900">Upload Failed</h4>
+					<h4 class="font-semibold text-rose-900">Action Failed</h4>
 					<p class="mt-0.5 text-xs text-rose-700">{form.error}</p>
 				</div>
 			</div>
 		{/if}
 
-		{#if form?.success}
+		{#if form?.success && form.action === 'addPhotos'}
 			<div
 				class="mb-6 flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 shadow-xs"
 			>
@@ -361,8 +522,43 @@
 			</div>
 		{/if}
 
-		<!-- Expandable Upload Photos to This Album Box -->
-		{#if showAddPhotos}
+		{#if form?.success && form.action === 'deletePhoto'}
+			<div
+				class="mb-6 flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 shadow-xs"
+			>
+				<div class="flex items-center gap-3">
+					<div
+						class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
+					>
+						<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+							<path
+								fill-rule="evenodd"
+								d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</div>
+					<div>
+						<h4 class="text-sm font-bold text-emerald-900">Photo Deleted</h4>
+						<p class="text-xs text-emerald-700">
+							The photo was permanently removed from this album.
+						</p>
+					</div>
+				</div>
+				<button
+					type="button"
+					onclick={() => {
+						if (form) form.success = false;
+					}}
+					class="text-xs font-semibold text-emerald-800 hover:underline"
+				>
+					Dismiss
+				</button>
+			</div>
+		{/if}
+
+		<!-- Expandable Upload Photos to This Album Box (Admin Only) -->
+		{#if data.isAdmin && showAddPhotos}
 			<div
 				id="upload-section"
 				class="mb-10 scroll-mt-24 rounded-3xl border border-amber-200/80 bg-white/95 p-6 shadow-xl shadow-amber-500/10 backdrop-blur-xs transition-all sm:p-8"
@@ -676,13 +872,15 @@
 				class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white/60 px-6 py-16 text-center shadow-2xs backdrop-blur-xs"
 			>
 				<p class="text-sm text-slate-500">No photos in this album yet.</p>
-				<button
-					type="button"
-					onclick={openAddPhotos}
-					class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-xs"
-				>
-					<span>Upload Photos Now</span>
-				</button>
+				{#if data.isAdmin}
+					<button
+						type="button"
+						onclick={openAddPhotos}
+						class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-xs"
+					>
+						<span>Upload Photos Now</span>
+					</button>
+				{/if}
 			</div>
 		{:else}
 			<div
@@ -693,8 +891,9 @@
 			>
 				{#each data.photos as photo, index (photo.id)}
 					<div
-						class="group mb-5 break-inside-avoid overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-500/15"
+						class="group relative mb-5 break-inside-avoid overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-500/15"
 					>
+						<!-- Lightbox Anchor -->
 						<a
 							href={photo.url}
 							data-pswp-width={photo.width || 0}
@@ -743,11 +942,244 @@
 								</span>
 							</div>
 						</a>
+
+						<!-- Admin Quick Action: Delete Photo Button -->
+						{#if data.isAdmin}
+							<div class="absolute top-2.5 right-2.5 z-20">
+								<button
+									type="button"
+									onclick={(e) => openDeletePhotoModal(photo, index + 1, e)}
+									class="flex h-7 w-7 items-center justify-center rounded-lg border border-white/60 bg-white/90 text-slate-400 opacity-0 shadow-sm backdrop-blur-md transition-all duration-200 group-hover:opacity-100 hover:scale-110 hover:border-rose-300 hover:bg-rose-600 hover:text-white"
+									title="Delete this photo"
+									aria-label="Delete photo"
+								>
+									<svg
+										class="h-3.5 w-3.5"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										stroke-width="2"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+										/>
+									</svg>
+								</button>
+							</div>
+						{/if}
 					</div>
 				{/each}
 			</div>
 		{/if}
 	</main>
+
+	<!-- Delete Single Photo Confirmation Modal -->
+	{#if photoToDelete}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="delete-photo-title"
+		>
+			<div
+				class="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl transition-all"
+			>
+				<div class="flex items-center gap-3.5">
+					<div
+						class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 shadow-inner"
+					>
+						<svg
+							class="h-5 w-5"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+							/>
+						</svg>
+					</div>
+					<div>
+						<h3 id="delete-photo-title" class="text-base font-bold text-slate-900">
+							Delete Photo #{photoToDelete.index}?
+						</h3>
+						<p class="text-xs text-slate-500">This photo will be permanently deleted.</p>
+					</div>
+				</div>
+
+				<div class="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+					<img
+						src={photoToDelete.url}
+						alt="Delete thumbnail"
+						class="max-h-40 w-full object-cover"
+					/>
+				</div>
+
+				<form
+					method="POST"
+					action="?/deletePhoto"
+					use:enhance={() => {
+						isDeletingPhoto = true;
+						return async ({ update }) => {
+							isDeletingPhoto = false;
+							closeDeletePhotoModal();
+							await update();
+						};
+					}}
+					class="mt-5 flex items-center justify-end gap-3"
+				>
+					<input type="hidden" name="photoId" value={photoToDelete.id} />
+
+					<button
+						type="button"
+						onclick={closeDeletePhotoModal}
+						disabled={isDeletingPhoto}
+						class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-50"
+					>
+						Cancel
+					</button>
+
+					<button
+						type="submit"
+						disabled={isDeletingPhoto}
+						class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-rose-600/25 transition hover:bg-rose-700 disabled:opacity-50"
+					>
+						{#if isDeletingPhoto}
+							<svg class="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								/>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								/>
+							</svg>
+							<span>Deleting...</span>
+						{:else}
+							<span>Delete Photo</span>
+						{/if}
+					</button>
+				</form>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Delete Entire Album Confirmation Modal -->
+	{#if showDeleteAlbumModal}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="delete-album-modal-title"
+		>
+			<div
+				class="relative w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl transition-all sm:p-7"
+			>
+				<div class="flex items-center gap-3.5">
+					<div
+						class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 shadow-inner"
+					>
+						<svg
+							class="h-6 w-6"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+							/>
+						</svg>
+					</div>
+					<div>
+						<h3 id="delete-album-modal-title" class="text-base font-bold text-slate-900">
+							Delete Entire Album?
+						</h3>
+						<p class="text-xs text-slate-500">This action cannot be undone.</p>
+					</div>
+				</div>
+
+				<div
+					class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-3.5 text-xs text-slate-700"
+				>
+					<p>
+						Are you sure you want to delete <strong class="text-slate-900"
+							>"{data.album.title}"</strong
+						>?
+					</p>
+					<p class="mt-1 text-slate-500">
+						All <strong class="text-rose-600">{data.photos.length}</strong> photo{data.photos
+							.length === 1
+							? ''
+							: 's'} in this album will be permanently deleted from disk storage and database.
+					</p>
+				</div>
+
+				<form
+					method="POST"
+					action="?/deleteAlbum"
+					use:enhance={() => {
+						isDeletingAlbum = true;
+						return async ({ update }) => {
+							isDeletingAlbum = false;
+							closeDeleteAlbumModal();
+							await update();
+						};
+					}}
+					class="mt-6 flex items-center justify-end gap-3"
+				>
+					<button
+						type="button"
+						onclick={closeDeleteAlbumModal}
+						disabled={isDeletingAlbum}
+						class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-50"
+					>
+						Cancel
+					</button>
+
+					<button
+						type="submit"
+						disabled={isDeletingAlbum}
+						class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-rose-600/25 transition hover:bg-rose-700 disabled:opacity-50"
+					>
+						{#if isDeletingAlbum}
+							<svg class="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								/>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								/>
+							</svg>
+							<span>Deleting...</span>
+						{:else}
+							<span>Delete Entire Album</span>
+						{/if}
+					</button>
+				</form>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Footer -->
 	<footer

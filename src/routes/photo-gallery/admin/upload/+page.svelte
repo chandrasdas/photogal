@@ -22,6 +22,7 @@
 	let selectedPhotos = $state<SelectedPhoto[]>([]);
 	let title = $state('');
 	let tag = $state('General');
+	let eventDate = $state(new Date().toISOString().split('T')[0]);
 	let fileInputRef = $state<HTMLInputElement | null>(null);
 
 	const popularTags = [
@@ -147,20 +148,63 @@
 				</div>
 			</div>
 
-			<!-- Back to Gallery Action -->
-			<a
-				href={resolve('/photo-gallery')}
-				class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-500 hover:shadow-md hover:shadow-amber-500/25 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
-			>
-				<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-					/>
-				</svg>
-				<span>View All Albums</span>
-			</a>
+			<!-- Actions -->
+			<div class="flex items-center gap-3">
+				<div
+					class="hidden items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-xs font-bold text-amber-800 sm:inline-flex"
+				>
+					<span class="relative flex h-2 w-2">
+						<span
+							class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"
+						></span>
+						<span class="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+					</span>
+					<span>Admin Mode</span>
+				</div>
+
+				<a
+					href={resolve('/photo-gallery')}
+					class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-500 hover:shadow-md hover:shadow-amber-500/25 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
+				>
+					<svg
+						class="h-4 w-4"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+						/>
+					</svg>
+					<span>View All Albums</span>
+				</a>
+
+				<form method="POST" action="/admin/logout" class="inline">
+					<button
+						type="submit"
+						class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50"
+						title="Sign out of admin mode"
+					>
+						<svg
+							class="h-3.5 w-3.5 text-slate-500"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+							/>
+						</svg>
+						<span class="hidden sm:inline">Logout</span>
+					</button>
+				</form>
+			</div>
 		</div>
 	</header>
 
@@ -445,6 +489,31 @@
 									bind:value={title}
 									required={uploadMode === 'new'}
 									placeholder="e.g. Annual Sports Day 2026"
+									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+								/>
+							</div>
+						</div>
+
+						<!-- Event Date Input -->
+						<div>
+							<div class="flex items-center justify-between">
+								<label
+									for="event-date-input"
+									class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+								>
+									Event Date <span class="text-rose-500">*</span>
+								</label>
+								<span class="text-[11px] text-slate-400"
+									>Date event took place (used for year filter)</span
+								>
+							</div>
+							<div class="mt-2">
+								<input
+									type="date"
+									id="event-date-input"
+									name="eventDate"
+									bind:value={eventDate}
+									required={uploadMode === 'new'}
 									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
 								/>
 							</div>

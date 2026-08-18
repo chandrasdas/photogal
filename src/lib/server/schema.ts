@@ -5,6 +5,7 @@ export const albumsTable = sqliteTable('albums', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	title: text('title').notNull(),
 	tag: text('tag').default('General').notNull(),
+	eventDate: integer('event_date', { mode: 'timestamp' }),
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.$defaultFn(() => new Date())
 		.default(sql`(strftime('%s', 'now'))`)

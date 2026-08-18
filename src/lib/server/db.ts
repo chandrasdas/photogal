@@ -19,6 +19,7 @@ await client.execute(`
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL,
 		tag TEXT NOT NULL DEFAULT 'General',
+		event_date INTEGER,
 		created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
 	);
 `);
@@ -34,7 +35,14 @@ await client.execute(`
 	);
 `);
 
-// Ensure width & height columns exist if upgraded from earlier schema
+// Ensure event_date column exists on albums if upgraded from earlier schema
+try {
+	await client.execute(`ALTER TABLE albums ADD COLUMN event_date INTEGER;`);
+} catch {
+	// Column already exists
+}
+
+// Ensure width & height columns exist on photos if upgraded from earlier schema
 try {
 	await client.execute(`ALTER TABLE photos ADD COLUMN width INTEGER;`);
 } catch {
