@@ -9,8 +9,10 @@ if (!fs.existsSync(dataDir)) {
 	fs.mkdirSync(dataDir, { recursive: true });
 }
 
+const dbUrl = process.env.DATABASE_URL || 'file:data/sqlite.db';
+
 const client = createClient({
-	url: 'file:data/sqlite.db'
+	url: dbUrl
 });
 
 // Auto-initialize tables if they don't exist
@@ -38,6 +40,13 @@ await client.execute(`
 // Ensure event_date column exists on albums if upgraded from earlier schema
 try {
 	await client.execute(`ALTER TABLE albums ADD COLUMN event_date INTEGER;`);
+} catch {
+	// Column already exists
+}
+
+// Ensure cover_photo_id column exists on albums if upgraded from earlier schema
+try {
+	await client.execute(`ALTER TABLE albums ADD COLUMN cover_photo_id INTEGER;`);
 } catch {
 	// Column already exists
 }

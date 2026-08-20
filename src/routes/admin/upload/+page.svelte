@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -120,10 +121,12 @@
 	/>
 </svelte:head>
 
-<div class="min-h-screen bg-slate-50/70 text-slate-800 antialiased">
+<div
+	class="min-h-screen bg-slate-50/70 text-slate-800 antialiased transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100"
+>
 	<!-- Top Sticky Navigation Bar -->
 	<header
-		class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur-md transition-all"
+		class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur-md transition-all dark:border-slate-800/80 dark:bg-slate-900/80"
 	>
 		<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
 			<!-- Brand / Logo -->
@@ -142,16 +145,23 @@
 					</svg>
 				</div>
 				<div>
-					<span class="text-xs font-bold tracking-wider text-amber-600 uppercase">Admin Studio</span
+					<span
+						class="text-xs font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400"
+						>Admin Studio</span
 					>
-					<h2 class="text-base font-extrabold text-slate-900 sm:text-lg">Photo Upload Portal</h2>
+					<h2 class="text-base font-extrabold text-slate-900 sm:text-lg dark:text-white">
+						Photo Upload Portal
+					</h2>
 				</div>
 			</div>
 
 			<!-- Actions -->
 			<div class="flex items-center gap-3">
+				<!-- Theme Toggle -->
+				<ThemeToggle />
+
 				<div
-					class="hidden items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-xs font-bold text-amber-800 sm:inline-flex"
+					class="hidden items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-xs font-bold text-amber-800 sm:inline-flex dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
 				>
 					<span class="relative flex h-2 w-2">
 						<span
@@ -163,8 +173,8 @@
 				</div>
 
 				<a
-					href={resolve('/photo-gallery')}
-					class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-500 hover:shadow-md hover:shadow-amber-500/25 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
+					href={resolve('/')}
+					class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-500 hover:shadow-md hover:shadow-amber-500/25 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none dark:bg-slate-800 dark:hover:bg-amber-500"
 				>
 					<svg
 						class="h-4 w-4"
@@ -182,14 +192,14 @@
 					<span>View All Albums</span>
 				</a>
 
-				<form method="POST" action="/admin/logout" class="inline">
+				<form method="POST" action={resolve('/admin/logout')} class="inline">
 					<button
 						type="submit"
-						class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50"
+						class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
 						title="Sign out of admin mode"
 					>
 						<svg
-							class="h-3.5 w-3.5 text-slate-500"
+							class="h-3.5 w-3.5 text-slate-500 dark:text-slate-400"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -210,16 +220,16 @@
 
 	<!-- Hero Banner -->
 	<section
-		class="relative overflow-hidden border-b border-slate-200/80 bg-linear-to-b from-white via-amber-50/40 to-slate-50 py-10 sm:py-14"
+		class="relative overflow-hidden border-b border-slate-200/80 bg-linear-to-b from-white via-amber-50/40 to-slate-50 py-10 sm:py-14 dark:border-slate-800/80 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
 	>
 		<div
-			class="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-3xl -translate-x-1/2 rounded-full bg-linear-to-tr from-amber-200/50 to-orange-200/40 blur-3xl"
+			class="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-3xl -translate-x-1/2 rounded-full bg-linear-to-tr from-amber-200/50 to-orange-200/40 blur-3xl dark:from-amber-900/20 dark:to-orange-950/20"
 		></div>
 
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="mx-auto max-w-2xl text-center">
 				<div
-					class="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-50/90 px-3.5 py-1 text-xs font-semibold text-amber-800 shadow-xs"
+					class="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-50/90 px-3.5 py-1 text-xs font-semibold text-amber-800 shadow-xs dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
 				>
 					<span class="relative flex h-2 w-2">
 						<span
@@ -231,33 +241,35 @@
 				</div>
 
 				<h1
-					class="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl sm:leading-tight"
+					class="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl sm:leading-tight dark:text-white"
 				>
 					{uploadMode === 'new' ? 'Create a New Photo Album' : 'Add Photos to Existing Album'}
 				</h1>
-				<p class="mt-2.5 text-sm text-slate-600 sm:text-base sm:leading-relaxed">
+				<p
+					class="mt-2.5 text-sm text-slate-600 sm:text-base sm:leading-relaxed dark:text-slate-400"
+				>
 					Upload multiple photos simultaneously. Images are automatically converted and optimized to
 					high-performance WebP formats for instant lightbox viewing.
 				</p>
 
 				<!-- Quick Feature Pills -->
 				<div
-					class="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-slate-600"
+					class="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-slate-600 dark:text-slate-400"
 				>
 					<div
-						class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 shadow-xs"
+						class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 shadow-xs dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300"
 					>
 						<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
 						<span>Multi-File Upload</span>
 					</div>
 					<div
-						class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 shadow-xs"
+						class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 shadow-xs dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300"
 					>
 						<span class="h-2 w-2 rounded-full bg-amber-500"></span>
 						<span>Auto WebP Optimization</span>
 					</div>
 					<div
-						class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 shadow-xs"
+						class="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-1.5 shadow-xs dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300"
 					>
 						<span class="h-2 w-2 rounded-full bg-orange-500"></span>
 						<span>{data.albums.length} Existing Album{data.albums.length === 1 ? '' : 's'}</span>
@@ -273,9 +285,9 @@
 			<!-- Feedback Alerts -->
 			{#if form?.error}
 				<div
-					class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-800 shadow-xs"
+					class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-800 shadow-xs dark:border-rose-900 dark:bg-rose-950/90 dark:text-rose-200"
 				>
-					<div class="mt-0.5 shrink-0 text-rose-600">
+					<div class="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400">
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
 							<path
 								fill-rule="evenodd"
@@ -285,14 +297,16 @@
 						</svg>
 					</div>
 					<div>
-						<h4 class="font-semibold text-rose-900">Upload Failed</h4>
-						<p class="mt-0.5 text-xs text-rose-700">{form.error}</p>
+						<h4 class="font-semibold text-rose-900 dark:text-rose-100">Upload Failed</h4>
+						<p class="mt-0.5 text-xs text-rose-700 dark:text-rose-300">{form.error}</p>
 					</div>
 				</div>
 			{/if}
 
 			{#if form?.success}
-				<div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-5 shadow-xs">
+				<div
+					class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-5 shadow-xs dark:border-emerald-900 dark:bg-emerald-950/90"
+				>
 					<div class="flex items-center gap-3">
 						<div
 							class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xs"
@@ -306,12 +320,12 @@
 							</svg>
 						</div>
 						<div>
-							<h4 class="text-sm font-bold text-emerald-900">
+							<h4 class="text-sm font-bold text-emerald-900 dark:text-emerald-100">
 								{form.mode === 'existing'
 									? 'Photos Added Successfully!'
 									: 'Album Created Successfully!'}
 							</h4>
-							<p class="text-xs text-emerald-700">
+							<p class="text-xs text-emerald-700 dark:text-emerald-300">
 								{form.photoCount} photo{form.photoCount === 1 ? '' : 's'} saved to
 								<strong>"{form.albumTitle}"</strong>.
 							</p>
@@ -320,7 +334,7 @@
 
 					{#if form.previewUrl}
 						<div
-							class="mt-4 overflow-hidden rounded-xl border border-emerald-200/80 bg-white shadow-xs"
+							class="mt-4 overflow-hidden rounded-xl border border-emerald-200/80 bg-white shadow-xs dark:border-emerald-800 dark:bg-slate-900"
 						>
 							<img src={form.previewUrl} alt="Preview" class="max-h-60 w-full object-cover" />
 						</div>
@@ -328,7 +342,7 @@
 
 					<div class="mt-4 flex flex-wrap gap-2.5">
 						<a
-							href={resolve('/photo-gallery/[albumId]', { albumId: String(form.albumId) })}
+							href={resolve('/[albumId]', { albumId: String(form.albumId) })}
 							class="inline-flex items-center gap-1.5 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:from-amber-600 hover:to-orange-600"
 						>
 							<span>Open Album in Gallery &rarr;</span>
@@ -340,7 +354,7 @@
 								clearAllPhotos();
 								title = '';
 							}}
-							class="rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-50"
+							class="rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-50 dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-slate-800"
 						>
 							Upload More Photos
 						</button>
@@ -349,14 +363,16 @@
 			{/if}
 
 			<!-- Upload Mode Tabs Switcher -->
-			<div class="mb-6 flex rounded-2xl border border-slate-200 bg-slate-100/80 p-1.5 shadow-2xs">
+			<div
+				class="mb-6 flex rounded-2xl border border-slate-200 bg-slate-100/80 p-1.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900/80"
+			>
 				<button
 					type="button"
 					onclick={() => (uploadMode = 'new')}
 					class="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all {uploadMode ===
 					'new'
-						? 'bg-white text-slate-900 shadow-sm'
-						: 'text-slate-500 hover:text-slate-800'}"
+						? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
+						: 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}"
 				>
 					<svg
 						class="h-4 w-4 text-amber-500"
@@ -375,8 +391,8 @@
 					onclick={() => (uploadMode = 'existing')}
 					class="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all {uploadMode ===
 					'existing'
-						? 'bg-white text-slate-900 shadow-sm'
-						: 'text-slate-500 hover:text-slate-800'}"
+						? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
+						: 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}"
 				>
 					<svg
 						class="h-4 w-4 text-orange-500"
@@ -397,7 +413,7 @@
 
 			<!-- Main Upload Form Card -->
 			<div
-				class="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xs sm:p-9"
+				class="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xs sm:p-9 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
 			>
 				<form
 					method="POST"
@@ -435,14 +451,14 @@
 						<div>
 							<label
 								for="album-selector"
-								class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+								class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 							>
 								Select Target Album <span class="text-rose-500">*</span>
 							</label>
 							<div class="mt-2">
 								{#if data.albums.length === 0}
 									<div
-										class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800"
+										class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
 									>
 										No existing albums found. Please choose <strong>"Create New Album"</strong> above.
 									</div>
@@ -452,7 +468,7 @@
 										name="existingAlbumId"
 										bind:value={selectedAlbumId}
 										required
-										class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-medium text-slate-900 shadow-xs transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+										class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-medium text-slate-900 shadow-xs transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 									>
 										<option value="" disabled>-- Select an existing album --</option>
 										{#each data.albums as a (a.id)}
@@ -475,11 +491,13 @@
 							<div class="flex items-center justify-between">
 								<label
 									for="title-input"
-									class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+									class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 								>
 									Album Name <span class="text-rose-500">*</span>
 								</label>
-								<span class="text-[11px] text-slate-400">Displayed on album card</span>
+								<span class="text-[11px] text-slate-400 dark:text-slate-500"
+									>Displayed on album card</span
+								>
 							</div>
 							<div class="mt-2">
 								<input
@@ -489,7 +507,7 @@
 									bind:value={title}
 									required={uploadMode === 'new'}
 									placeholder="e.g. Annual Sports Day 2026"
-									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
 								/>
 							</div>
 						</div>
@@ -499,11 +517,11 @@
 							<div class="flex items-center justify-between">
 								<label
 									for="event-date-input"
-									class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+									class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 								>
 									Event Date <span class="text-rose-500">*</span>
 								</label>
-								<span class="text-[11px] text-slate-400"
+								<span class="text-[11px] text-slate-400 dark:text-slate-500"
 									>Date event took place (used for year filter)</span
 								>
 							</div>
@@ -514,7 +532,7 @@
 									name="eventDate"
 									bind:value={eventDate}
 									required={uploadMode === 'new'}
-									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 								/>
 							</div>
 						</div>
@@ -524,11 +542,13 @@
 							<div class="flex items-center justify-between">
 								<label
 									for="tag-input"
-									class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+									class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 								>
 									Album Tag / Category
 								</label>
-								<span class="text-[11px] text-slate-400">Used for gallery filter tabs</span>
+								<span class="text-[11px] text-slate-400 dark:text-slate-500"
+									>Used for gallery filter tabs</span
+								>
 							</div>
 							<div class="mt-2">
 								<input
@@ -537,13 +557,15 @@
 									name="tag"
 									bind:value={tag}
 									placeholder="e.g. Sports, Campus, Arts, Events"
-									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
 								/>
 							</div>
 
 							<!-- Suggested Tag Chips -->
 							<div class="mt-3">
-								<span class="text-[11px] font-medium text-slate-500">Quick suggestions:</span>
+								<span class="text-[11px] font-medium text-slate-500 dark:text-slate-400"
+									>Quick suggestions:</span
+								>
 								<div class="mt-1.5 flex flex-wrap gap-1.5">
 									{#each popularTags as t (t)}
 										<button
@@ -552,7 +574,7 @@
 											class="rounded-lg px-2.5 py-1 text-xs font-medium transition {tag.toLowerCase() ===
 											t.toLowerCase()
 												? 'bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-xs'
-												: 'border border-slate-200 bg-slate-50 text-slate-600 hover:border-amber-300 hover:bg-amber-50/50 hover:text-amber-800'}"
+												: 'border border-slate-200 bg-slate-50 text-slate-600 hover:border-amber-300 hover:bg-amber-50/50 hover:text-amber-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}"
 										>
 											{t}
 										</button>
@@ -567,13 +589,13 @@
 						<div class="flex items-center justify-between">
 							<label
 								for="photos-input"
-								class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+								class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 							>
 								Photos to Upload <span class="text-rose-500">*</span>
 							</label>
 							{#if selectedPhotos.length > 0}
 								<div class="flex items-center gap-2 text-xs">
-									<span class="font-semibold text-amber-700">
+									<span class="font-semibold text-amber-700 dark:text-amber-400">
 										{selectedPhotos.length} photo{selectedPhotos.length > 1 ? 's' : ''} ({formatBytes(
 											totalSize
 										)})
@@ -582,7 +604,7 @@
 									<button
 										type="button"
 										onclick={clearAllPhotos}
-										class="font-medium text-rose-600 hover:underline"
+										class="font-medium text-rose-600 hover:underline dark:text-rose-400"
 									>
 										Clear all
 									</button>
@@ -592,10 +614,10 @@
 
 						<div
 							class="mt-2 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 {isDragging
-								? 'scale-[1.01] border-amber-500 bg-amber-50/60'
+								? 'scale-[1.01] border-amber-500 bg-amber-50/60 dark:bg-amber-950/40'
 								: selectedPhotos.length > 0
-									? 'border-amber-300 bg-slate-50/40'
-									: 'border-slate-300 bg-slate-50/40 hover:border-amber-400 hover:bg-amber-50/30'}"
+									? 'border-amber-300 bg-slate-50/40 dark:border-amber-500/50 dark:bg-slate-800/40'
+									: 'border-slate-300 bg-slate-50/40 hover:border-amber-400 hover:bg-amber-50/30 dark:border-slate-700 dark:bg-slate-800/30 dark:hover:border-amber-500/50'}"
 							ondragover={handleDragOver}
 							ondragleave={handleDragLeave}
 							ondrop={handleDrop}
@@ -608,7 +630,7 @@
 									<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 										{#each selectedPhotos as photo (photo.id)}
 											<div
-												class="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-black/5 shadow-2xs"
+												class="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-black/5 shadow-2xs dark:border-slate-700 dark:bg-slate-800"
 											>
 												<img
 													src={photo.previewUrl}
@@ -650,10 +672,10 @@
 									<div class="mt-4 flex items-center justify-center">
 										<label
 											for="photos-input"
-											class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
+											class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
 										>
 											<svg
-												class="h-4 w-4 text-slate-500"
+												class="h-4 w-4 text-slate-500 dark:text-slate-400"
 												fill="none"
 												viewBox="0 0 24 24"
 												stroke="currentColor"
@@ -672,7 +694,7 @@
 							{:else}
 								<!-- Empty Multi-Photo Dropzone State -->
 								<div
-									class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-inner"
+									class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-inner dark:bg-slate-800 dark:text-amber-400"
 								>
 									<svg
 										class="h-6 w-6"
@@ -692,12 +714,14 @@
 								<div class="mt-3">
 									<label
 										for="photos-input"
-										class="cursor-pointer font-semibold text-amber-600 focus-within:outline-none hover:text-amber-700"
+										class="cursor-pointer font-semibold text-amber-600 focus-within:outline-none hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
 									>
 										<span class="text-sm">Click to browse multiple photos</span>
-										<span class="text-sm font-normal text-slate-600"> or drag & drop</span>
+										<span class="text-sm font-normal text-slate-600 dark:text-slate-400">
+											or drag & drop</span
+										>
 									</label>
-									<p class="mt-1 text-xs text-slate-400">
+									<p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
 										Select multiple PNG, JPG, WebP, GIF files at once
 									</p>
 								</div>
@@ -771,7 +795,7 @@
 
 	<!-- Footer -->
 	<footer
-		class="mt-16 border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500"
+		class="mt-16 border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500 dark:border-slate-800/80 dark:bg-slate-950 dark:text-slate-500"
 	>
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<p>© {new Date().getFullYear()} School Photo Gallery. Preserving our community memories.</p>

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { error, fail, redirect } from '@sveltejs/kit';
 import sharp from 'sharp';
+import { base } from '$app/paths';
 import { db } from '$lib/server/db';
 import { albumsTable, photosTable } from '$lib/server/schema';
 import { eq, asc } from 'drizzle-orm';
@@ -15,6 +16,13 @@ function getAlbumFolderName(albumTitle: string): string {
 		.replace(/-+/g, '-')
 		.replace(/^-|-$/g, '');
 	return sanitized || 'album';
+}
+
+function normalizePhotoUrl(rawUrl: string): string {
+	if (!rawUrl) return '';
+	if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl;
+	if (base && rawUrl.startsWith(base)) return rawUrl;
+	return `${base}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
 }
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -35,9 +43,14 @@ export const load: PageServerLoad = async ({ params }) => {
 		.where(eq(photosTable.albumId, albumId))
 		.orderBy(asc(photosTable.id));
 
+	const normalizedPhotos = photos.map((p) => ({
+		...p,
+		url: normalizePhotoUrl(p.url)
+	}));
+
 	return {
 		album,
-		photos
+		photos: normalizedPhotos
 	};
 };
 
@@ -99,10 +112,12 @@ export const actions = {
 
 					const info = await sharp(buffer)
 						.resize({
-							width: 1920,
+							width: 2560,
+							height: 2560,
+							fit: 'inside',
 							withoutEnlargement: true
 						})
-						.webp({ quality: 80 })
+						.webp({ quality: 90 })
 						.toFile(filePath);
 
 					const url = `/uploads/${folderName}/${fileName}`;
@@ -152,8 +167,8 @@ export const actions = {
 
 		try {
 			// Delete photo file from uploads/
-			if (photo.url.startsWith('/uploads/')) {
-				const relPath = photo.url.replace(/^\/uploads\//, '');
+			if (photo.url.includes('/uploads/')) {
+				const relPath = photo.url.substring(photo.url.indexOf('/uploads/') + '/uploads/'.length);
 				const filePath = path.resolve('uploads', relPath);
 				if (fs.existsSync(filePath)) {
 					try {
@@ -198,8 +213,8 @@ export const actions = {
 			const photos = await db.select().from(photosTable).where(eq(photosTable.albumId, albumId));
 
 			for (const photo of photos) {
-				if (photo.url.startsWith('/uploads/')) {
-					const relPath = photo.url.replace(/^\/uploads\//, '');
+				if (photo.url.includes('/uploads/')) {
+					const relPath = photo.url.substring(photo.url.indexOf('/uploads/') + '/uploads/'.length);
 					const filePath = path.resolve('uploads', relPath);
 					if (fs.existsSync(filePath)) {
 						try {
@@ -230,6 +245,44 @@ export const actions = {
 			return fail(500, { error: 'Failed to delete album.' });
 		}
 
-		redirect(303, '/photo-gallery');
+		redirect(303, base || '/');
+	},
+
+	setCoverPhoto: async ({ request, params, locals }) => {
+		if (!locals.isAdmin) {
+			return fail(403, { error: 'Unauthorized. Admin privileges required.' });
+		}
+
+		const albumId = Number.parseInt(params.albumId, 10);
+		if (Number.isNaN(albumId)) {
+			return fail(400, { error: 'Invalid Album ID.' });
+		}
+
+		const formData = await request.formData();
+		const photoId = Number.parseInt(String(formData.get('photoId')), 10);
+		if (Number.isNaN(photoId)) {
+			return fail(400, { error: 'Invalid Photo ID.' });
+		}
+
+		const [photo] = await db.select().from(photosTable).where(eq(photosTable.id, photoId));
+		if (!photo || photo.albumId !== albumId) {
+			return fail(404, { error: 'Photo not found in this album.' });
+		}
+
+		try {
+			await db
+				.update(albumsTable)
+				.set({ coverPhotoId: photoId })
+				.where(eq(albumsTable.id, albumId));
+
+			return {
+				success: true,
+				action: 'setCoverPhoto',
+				coverPhotoId: photoId
+			};
+		} catch (err) {
+			console.error('Failed to update album cover photo:', err);
+			return fail(500, { error: 'Failed to update cover photo.' });
+		}
 	}
 } satisfies Actions;

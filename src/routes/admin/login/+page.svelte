@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -16,18 +17,23 @@
 </svelte:head>
 
 <div
-	class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-slate-50/80 px-4 py-12 antialiased sm:px-6 lg:px-8"
+	class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-slate-50/80 px-4 py-12 antialiased transition-colors duration-200 sm:px-6 lg:px-8 dark:bg-slate-950 dark:text-slate-100"
 >
+	<!-- Top Right Theme Toggle -->
+	<div class="absolute top-4 right-4 z-20">
+		<ThemeToggle />
+	</div>
+
 	<!-- Ambient Glow Background -->
 	<div
-		class="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-3xl -translate-x-1/2 rounded-full bg-linear-to-tr from-amber-200/50 to-orange-200/40 blur-3xl"
+		class="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-3xl -translate-x-1/2 rounded-full bg-linear-to-tr from-amber-200/50 to-orange-200/40 blur-3xl dark:from-amber-900/20 dark:to-orange-950/20"
 	></div>
 
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
 		<!-- Brand / Logo Icon -->
 		<div class="flex justify-center">
 			<a
-				href={resolve('/photo-gallery')}
+				href={resolve('/')}
 				class="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-tr from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30 transition hover:scale-105"
 				title="Back to Gallery"
 			>
@@ -43,10 +49,10 @@
 
 		<div class="mt-4 text-center">
 			<span
-				class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5 text-xs font-bold text-amber-800"
+				class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5 text-xs font-bold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
 			>
 				<svg
-					class="h-3.5 w-3.5 text-amber-600"
+					class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"
 					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor"
@@ -60,10 +66,12 @@
 				</svg>
 				Admin Portal
 			</span>
-			<h2 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+			<h2
+				class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white"
+			>
 				Administrator Sign In
 			</h2>
-			<p class="mt-1.5 text-xs text-slate-500 sm:text-sm">
+			<p class="mt-1.5 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
 				Enter your administrator password to create, edit, or delete albums and photos.
 			</p>
 		</div>
@@ -71,14 +79,14 @@
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 		<div
-			class="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xs sm:p-9"
+			class="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xs sm:p-9 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
 		>
 			<!-- Feedback Error Alert -->
 			{#if form?.error}
 				<div
-					class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-xs text-rose-800 shadow-xs"
+					class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-xs text-rose-800 shadow-xs dark:border-rose-900 dark:bg-rose-950/90 dark:text-rose-200"
 				>
-					<div class="mt-0.5 shrink-0 text-rose-600">
+					<div class="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400">
 						<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
 							<path
 								fill-rule="evenodd"
@@ -88,8 +96,8 @@
 						</svg>
 					</div>
 					<div>
-						<h4 class="font-bold text-rose-900">Authentication Failed</h4>
-						<p class="mt-0.5 text-rose-700">{form.error}</p>
+						<h4 class="font-bold text-rose-900 dark:text-rose-100">Authentication Failed</h4>
+						<p class="mt-0.5 text-rose-700 dark:text-rose-300">{form.error}</p>
 					</div>
 				</div>
 			{/if}
@@ -112,7 +120,7 @@
 					<div class="flex items-center justify-between">
 						<label
 							for="admin-password"
-							class="block text-xs font-bold tracking-wider text-slate-700 uppercase"
+							class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 						>
 							Admin Password
 						</label>
@@ -126,12 +134,12 @@
 							required
 							autocomplete="current-password"
 							placeholder="••••••••••••"
-							class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pr-11 pl-4 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+							class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pr-11 pl-4 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
 						/>
 						<button
 							type="button"
 							onclick={() => (showPassword = !showPassword)}
-							class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
+							class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 focus:outline-none dark:text-slate-500 dark:hover:text-slate-300"
 							tabindex="-1"
 							aria-label={showPassword ? 'Hide password' : 'Show password'}
 						>
@@ -201,10 +209,10 @@
 				</button>
 			</form>
 
-			<div class="mt-6 border-t border-slate-100 pt-5 text-center">
+			<div class="mt-6 border-t border-slate-100 pt-5 text-center dark:border-slate-800">
 				<a
-					href={resolve('/photo-gallery')}
-					class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800"
+					href={resolve('/')}
+					class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
 				>
 					<span>&larr;</span>
 					<span>Back to Public Photo Gallery</span>

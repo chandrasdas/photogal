@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fail, redirect } from '@sveltejs/kit';
 import sharp from 'sharp';
+import { base } from '$app/paths';
 import { db } from '$lib/server/db';
 import { albumsTable, photosTable } from '$lib/server/schema';
 import { desc, eq } from 'drizzle-orm';
@@ -17,9 +18,17 @@ function getAlbumFolderName(albumTitle: string): string {
 	return sanitized || 'album';
 }
 
+function normalizePhotoUrl(rawUrl: string): string {
+	if (!rawUrl) return '';
+	if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl;
+	if (base && rawUrl.startsWith(base)) return rawUrl;
+	return `${base}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.isAdmin) {
-		redirect(303, '/admin/login?redirectTo=/photo-gallery/admin/upload');
+		const loginTarget = `${base}/admin/login?redirectTo=${encodeURIComponent(`${base}/admin/upload`)}`;
+		redirect(303, loginTarget);
 	}
 
 	const allAlbums = await db.select().from(albumsTable).orderBy(desc(albumsTable.createdAt));
@@ -136,14 +145,16 @@ export const actions = {
 
 					const info = await sharp(buffer)
 						.resize({
-							width: 1920,
+							width: 2560,
+							height: 2560,
+							fit: 'inside',
 							withoutEnlargement: true
 						})
-						.webp({ quality: 80 })
+						.webp({ quality: 90 })
 						.toFile(filePath);
 
 					const url = `/uploads/${folderName}/${fileName}`;
-					processedPhotoUrls.push(url);
+					processedPhotoUrls.push(normalizePhotoUrl(url));
 
 					// Insert photo record
 					await db.insert(photosTable).values({
