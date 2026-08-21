@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import AdminBadge from '$lib/components/AdminBadge.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import HomeLink from '$lib/components/HomeLink.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -121,7 +124,7 @@
 </script>
 
 <svelte:head>
-	<title>Photo Albums | School Photo Archive</title>
+	<title>Photo Gallery | RKMVVM Malda</title>
 	<meta
 		name="description"
 		content="Explore curated school photo albums, campus events, sports days, and student celebrations."
@@ -158,7 +161,7 @@
 				<div>
 					<span
 						class="text-[10px] font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400"
-						>Archive</span
+						>RKMVVM Malda</span
 					>
 					<h2 class="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
 						Photo Gallery
@@ -207,22 +210,15 @@
 					{/if}
 				</div>
 
+				<!-- School Main Website Home Link -->
+				<HomeLink />
+
 				<!-- Dark Mode Toggle Button -->
 				<ThemeToggle />
 
 				{#if data.isAdmin}
 					<!-- Admin Mode Indicator Badge -->
-					<div
-						class="hidden items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50/90 px-2.5 py-1 text-xs font-bold text-amber-800 sm:inline-flex dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
-					>
-						<span class="relative flex h-1.5 w-1.5">
-							<span
-								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"
-							></span>
-							<span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-						</span>
-						<span>Admin</span>
-					</div>
+					<AdminBadge />
 
 					<!-- Create New Album Button -->
 					<a
@@ -359,7 +355,7 @@
 					<h1
 						class="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl dark:text-white"
 					>
-						Photo Albums
+						All Albums
 					</h1>
 					<span
 						class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50/80 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
@@ -689,16 +685,6 @@
 									</div>
 								{/if}
 
-								<!-- Floating Tag Badge -->
-								<div class="absolute top-2.5 left-2.5 z-10">
-									<span
-										class="inline-flex items-center gap-1 rounded-full border border-white/60 bg-white/95 px-2.5 py-0.5 text-[11px] font-bold text-slate-800 shadow-xs backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-slate-200"
-									>
-										<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-										{album.tag || 'General'}
-									</span>
-								</div>
-
 								<!-- Floating Photo Count Pill -->
 								<div class="absolute top-2.5 right-2.5 z-10">
 									<span
@@ -956,12 +942,6 @@
 		</div>
 	{/if}
 
-	<!-- Footer -->
-	<footer
-		class="mt-16 border-t border-slate-200/80 bg-white py-6 text-center text-xs text-slate-500 dark:border-slate-800/80 dark:bg-slate-950 dark:text-slate-500"
-	>
-		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<p>© {new Date().getFullYear()} School Photo Gallery. Preserving our community memories.</p>
-		</div>
-	</footer>
+	<!-- Shared Footer -->
+	<Footer />
 </div>

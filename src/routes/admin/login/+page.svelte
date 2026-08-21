@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import HomeLink from '$lib/components/HomeLink.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -12,15 +13,19 @@
 </script>
 
 <svelte:head>
-	<title>Admin Login | School Photo Archive</title>
-	<meta name="description" content="Administrator portal login for photo gallery management." />
+	<title>Admin Login | RKMVVM Malda</title>
+	<meta
+		name="description"
+		content="Administrator portal login for RKMVVM Malda photo gallery management."
+	/>
 </svelte:head>
 
 <div
 	class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-slate-50/80 px-4 py-12 antialiased transition-colors duration-200 sm:px-6 lg:px-8 dark:bg-slate-950 dark:text-slate-100"
 >
-	<!-- Top Right Theme Toggle -->
-	<div class="absolute top-4 right-4 z-20">
+	<!-- Top Right Navigation Actions -->
+	<div class="absolute top-4 right-4 z-20 flex items-center gap-2">
+		<HomeLink class="bg-white/90 backdrop-blur-xs" />
 		<ThemeToggle />
 	</div>
 
@@ -209,13 +214,23 @@
 				</button>
 			</form>
 
-			<div class="mt-6 border-t border-slate-100 pt-5 text-center dark:border-slate-800">
+			<div
+				class="mt-6 flex flex-col items-center gap-2 border-t border-slate-100 pt-5 text-center text-xs dark:border-slate-800"
+			>
 				<a
 					href={resolve('/')}
-					class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+					class="inline-flex items-center gap-1.5 font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
 				>
 					<span>&larr;</span>
 					<span>Back to Public Photo Gallery</span>
+				</a>
+				<a
+					href="https://rkmvvmmalda.org"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="font-medium text-amber-600 transition hover:underline dark:text-amber-400"
+				>
+					Visit School Main Website (rkmvvmmalda.org)
 				</a>
 			</div>
 		</div>

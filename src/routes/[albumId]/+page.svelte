@@ -5,6 +5,9 @@
 	import PhotoSwipeLightbox from 'photoswipe/lightbox';
 	import type PhotoSwipe from 'photoswipe';
 	import 'photoswipe/style.css';
+	import AdminBadge from '$lib/components/AdminBadge.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import HomeLink from '$lib/components/HomeLink.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -282,10 +285,10 @@
 </script>
 
 <svelte:head>
-	<title>{data.album.title} | School Photo Archive</title>
+	<title>{data.album.title} | RKMVVM Malda</title>
 	<meta
 		name="description"
-		content={`Browse photos from the ${data.album.title} album in the school photo archive.`}
+		content={`Browse photos from the ${data.album.title} album in the RKMVVM Malda photo gallery.`}
 	/>
 </svelte:head>
 
@@ -331,6 +334,9 @@
 
 			<!-- Actions -->
 			<div class="flex items-center gap-2">
+				<!-- School Main Website Home Link -->
+				<HomeLink />
+
 				<a
 					href={resolve('/')}
 					class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -356,17 +362,7 @@
 
 				{#if data.isAdmin}
 					<!-- Admin Badge -->
-					<div
-						class="hidden items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50/90 px-2.5 py-1 text-xs font-bold text-amber-800 sm:inline-flex dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
-					>
-						<span class="relative flex h-1.5 w-1.5">
-							<span
-								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"
-							></span>
-							<span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-						</span>
-						<span>Admin</span>
-					</div>
+					<AdminBadge />
 
 					<!-- Logout Action -->
 					<form method="POST" action={resolve('/admin/logout')} class="inline">
@@ -1333,12 +1329,6 @@
 		</div>
 	{/if}
 
-	<!-- Footer -->
-	<footer
-		class="mt-16 border-t border-slate-200/80 bg-white py-6 text-center text-xs text-slate-500 dark:border-slate-800/80 dark:bg-slate-950 dark:text-slate-500"
-	>
-		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<p>© {new Date().getFullYear()} School Photo Gallery. Preserving our community memories.</p>
-		</div>
-	</footer>
+	<!-- Shared Footer -->
+	<Footer />
 </div>
