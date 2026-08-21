@@ -2,7 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { SvelteDate } from 'svelte/reactivity';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { parseDMYDate, formatToDMY, formatToISODate, formatFriendlyDate } from '$lib/dateUtils';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -23,8 +25,38 @@
 	let selectedPhotos = $state<SelectedPhoto[]>([]);
 	let title = $state('');
 	let tag = $state('General');
-	let eventDate = $state(new Date().toISOString().split('T')[0]);
+	let dateInputMode = $state<'manual' | 'picker'>('manual');
+	let manualDateText = $state(formatToDMY(new Date()));
+	let pickerDate = $state(formatToISODate(new Date()));
 	let fileInputRef = $state<HTMLInputElement | null>(null);
+
+	let parsedDate = $derived.by(() => {
+		if (dateInputMode === 'manual') {
+			return parseDMYDate(manualDateText);
+		} else {
+			return parseDMYDate(pickerDate);
+		}
+	});
+
+	let isValidDate = $derived(parsedDate !== null);
+	let friendlyDatePreview = $derived(parsedDate ? formatFriendlyDate(parsedDate) : '');
+	let finalEventDateValue = $derived(parsedDate ? formatToDMY(parsedDate) : manualDateText.trim());
+
+	function applyPreset(type: 'today' | 'yesterday') {
+		const d = new SvelteDate();
+		if (type === 'yesterday') {
+			d.setDate(d.getDate() - 1);
+		}
+		manualDateText = formatToDMY(d);
+		pickerDate = formatToISODate(d);
+	}
+
+	function applyYear(year: number) {
+		const current = parsedDate || new Date();
+		const d = new Date(year, current.getMonth(), current.getDate());
+		manualDateText = formatToDMY(d);
+		pickerDate = formatToISODate(d);
+	}
 
 	const popularTags = [
 		'Campus',
@@ -439,6 +471,8 @@
 							if (form?.success) {
 								clearAllPhotos();
 								title = '';
+								manualDateText = formatToDMY(new Date());
+								pickerDate = formatToISODate(new Date());
 							}
 						};
 					}}
@@ -512,28 +546,206 @@
 							</div>
 						</div>
 
-						<!-- Event Date Input -->
+						<!-- Event Date Input (Manual Typing DD-MM-YYYY + Calendar Picker) -->
 						<div>
-							<div class="flex items-center justify-between">
+							<div class="flex flex-wrap items-center justify-between gap-2">
 								<label
-									for="event-date-input"
-									class="block text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
+									for={dateInputMode === 'manual' ? 'event-date-manual' : 'event-date-picker'}
+									class="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300"
 								>
-									Event Date <span class="text-rose-500">*</span>
+									<span>Event Date</span>
+									<span
+										class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-950/80 dark:text-amber-300"
+										>DD-MM-YYYY</span
+									>
+									<span class="text-rose-500">*</span>
 								</label>
-								<span class="text-[11px] text-slate-400 dark:text-slate-500"
-									>Date event took place (used for year filter)</span
+
+								<!-- Mode Toggle (Manual Typing vs Calendar Picker) -->
+								<div
+									class="flex items-center rounded-lg border border-slate-200 bg-slate-100/80 p-0.5 text-xs dark:border-slate-700 dark:bg-slate-800"
+								>
+									<button
+										type="button"
+										onclick={() => {
+											dateInputMode = 'manual';
+											if (pickerDate) {
+												const p = parseDMYDate(pickerDate);
+												if (p) manualDateText = formatToDMY(p);
+											}
+										}}
+										class="flex items-center gap-1.5 rounded-md px-2.5 py-1 font-medium transition {dateInputMode ===
+										'manual'
+											? 'bg-white text-slate-900 shadow-xs dark:bg-slate-700 dark:text-white'
+											: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
+										title="Type date manually in DD-MM-YYYY format"
+									>
+										<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+											/>
+										</svg>
+										<span>Type DD-MM-YYYY</span>
+									</button>
+									<button
+										type="button"
+										onclick={() => {
+											dateInputMode = 'picker';
+											if (manualDateText) {
+												const p = parseDMYDate(manualDateText);
+												if (p) pickerDate = formatToISODate(p);
+											}
+										}}
+										class="flex items-center gap-1.5 rounded-md px-2.5 py-1 font-medium transition {dateInputMode ===
+										'picker'
+											? 'bg-white text-slate-900 shadow-xs dark:bg-slate-700 dark:text-white'
+											: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
+										title="Pick date using visual calendar"
+									>
+										<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+											/>
+										</svg>
+										<span>Calendar</span>
+									</button>
+								</div>
+							</div>
+
+							<!-- Hidden Input Bound for Form Submission -->
+							<input type="hidden" name="eventDate" value={finalEventDateValue} />
+
+							<div class="mt-2">
+								{#if dateInputMode === 'manual'}
+									<div class="relative">
+										<input
+											type="text"
+											id="event-date-manual"
+											bind:value={manualDateText}
+											placeholder="DD-MM-YYYY (e.g. 12-05-2026 or 12/05/2026)"
+											required={uploadMode === 'new'}
+											class="block w-full rounded-xl border px-4 py-2.5 pr-11 text-sm shadow-xs transition placeholder:text-slate-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 {isValidDate
+												? 'border-slate-200 bg-slate-50/50 text-slate-900 focus:border-amber-500 focus:bg-white dark:border-slate-700 dark:focus:bg-slate-800'
+												: 'border-rose-300 bg-rose-50/30 text-slate-900 focus:border-rose-500 focus:bg-white dark:border-rose-800/60 dark:bg-rose-950/20 dark:text-white'}"
+										/>
+										<button
+											type="button"
+											onclick={() => {
+												const p = parseDMYDate(manualDateText);
+												if (p) pickerDate = formatToISODate(p);
+												dateInputMode = 'picker';
+											}}
+											class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 transition hover:text-amber-600 dark:hover:text-amber-400"
+											title="Switch to calendar picker"
+										>
+											<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+												/>
+											</svg>
+										</button>
+									</div>
+								{:else}
+									<div class="relative">
+										<input
+											type="date"
+											id="event-date-picker"
+											bind:value={pickerDate}
+											onchange={() => {
+												const p = parseDMYDate(pickerDate);
+												if (p) manualDateText = formatToDMY(p);
+											}}
+											required={uploadMode === 'new'}
+											class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+										/>
+									</div>
+								{/if}
+							</div>
+
+							<!-- Real-time formatted date preview & validation badge -->
+							<div class="mt-2 flex flex-wrap items-center justify-between gap-1 text-xs">
+								{#if isValidDate && friendlyDatePreview}
+									<div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+										<svg
+											class="h-3.5 w-3.5 shrink-0"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M5 13l4 4L19 7"
+											/>
+										</svg>
+										<span
+											>Interpreted as: <strong class="font-semibold">{friendlyDatePreview}</strong
+											></span
+										>
+									</div>
+								{:else}
+									<div class="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+										<svg
+											class="h-3.5 w-3.5 shrink-0"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+											/>
+										</svg>
+										<span
+											>Please enter in <strong>DD-MM-YYYY</strong> (e.g. 12-05-2026, 12/05/2026, 12.05.2026)</span
+										>
+									</div>
+								{/if}
+								<span class="hidden text-[11px] text-slate-400 sm:inline dark:text-slate-500"
+									>Day-Month-Year</span
 								>
 							</div>
-							<div class="mt-2">
-								<input
-									type="date"
-									id="event-date-input"
-									name="eventDate"
-									bind:value={eventDate}
-									required={uploadMode === 'new'}
-									class="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-								/>
+
+							<!-- Quick Preset Date & Year Chips -->
+							<div class="mt-2.5 flex flex-wrap items-center gap-1.5">
+								<span class="text-[11px] font-medium text-slate-400 dark:text-slate-500"
+									>Quick set:</span
+								>
+								<button
+									type="button"
+									onclick={() => applyPreset('today')}
+									class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+								>
+									Today
+								</button>
+								<button
+									type="button"
+									onclick={() => applyPreset('yesterday')}
+									class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+								>
+									Yesterday
+								</button>
+								{#each [2026, 2025, 2024, 2023, 2022, 2020] as yr (yr)}
+									<button
+										type="button"
+										onclick={() => applyYear(yr)}
+										class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+									>
+										{yr}
+									</button>
+								{/each}
 							</div>
 						</div>
 

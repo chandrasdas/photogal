@@ -4,6 +4,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import sharp from 'sharp';
 import { base } from '$app/paths';
 import { db } from '$lib/server/db';
+import { parseDMYDate } from '$lib/dateUtils';
 import { albumsTable, photosTable } from '$lib/server/schema';
 import { desc, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
@@ -89,10 +90,7 @@ export const actions = {
 
 				let parsedEventDate: Date | null = null;
 				if (typeof eventDateStr === 'string' && eventDateStr.trim()) {
-					const parsed = new Date(eventDateStr.trim());
-					if (!Number.isNaN(parsed.getTime())) {
-						parsedEventDate = parsed;
-					}
+					parsedEventDate = parseDMYDate(eventDateStr.trim());
 				}
 				if (!parsedEventDate) {
 					parsedEventDate = new Date();
